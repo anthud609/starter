@@ -9,7 +9,8 @@
     "psr-4": { "Tests\\": "tests/" }
   },
     "require": {
-        "filp/whoops": "2",
-        "psr/log": "^3.0"
+        "filp/whoops": "^2.15",
+        "psr/log": "^3.0",
+        "vlucas/phpdotenv": "^5.5"
     }
 }

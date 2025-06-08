@@ -12,17 +12,31 @@ use Psr\Log\LoggerInterface;
 
 class ErrorHandlerFactory
 {
+    private static bool $initialized = false;
+    
     public static function create(array $config = [], ?LoggerInterface $logger = null): void
     {
+        // Prevent double initialization
+        if (self::$initialized) {
+            return;
+        }
+        self::$initialized = true;
+        
         $debug = $config['debug'] ?? (defined('APP_DEBUG') ? APP_DEBUG : false);
         $environment = $config['environment'] ?? self::detectEnvironment();
         
+        // Configure which errors to ignore
+        $ignoredErrors = $config['ignored_errors'] ?? ($debug ? [] : [E_DEPRECATED, E_USER_DEPRECATED]);
+        
         // Always register PHP error handler first (for warnings, notices, etc)
-        (new PhpErrorHandler($logger))->register();
+        (new PhpErrorHandler($logger, $ignoredErrors))->register();
         
         if ($debug && $environment === 'web') {
             // Use Whoops in debug mode for web
             $whoops = new \Whoops\Run;
+            
+            // Silence Whoops' own error handler to prevent double handling
+            $whoops->silenceErrorsInPaths('/vendor/filp/whoops/', E_ALL);
             
             // Add logger handler BEFORE PrettyPageHandler
             if ($logger) {
@@ -80,5 +94,10 @@ class ErrorHandlerFactory
             'console' => new ConsoleExceptionRenderer(),
             default => new HtmlExceptionRenderer($debug)
         };
+    }
+    
+    public static function reset(): void
+    {
+        self::$initialized = false;
     }
 }

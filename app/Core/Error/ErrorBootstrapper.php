@@ -1,5 +1,11 @@
+<?php
+namespace App\Core\Error;
+use App\Core\Error\EnvironmentDetector;
+use App\Core\Error\Factory\RendererFactory;
+use App\Core\Error\Handler\PhpErrorHandler;
+use App\Core\Error\Handler\ExceptionHandler;
+use App\Core\Error\Handler\ShutdownHandler;
 use Psr\Log\LoggerInterface;
-
 final class ErrorBootstrapper
 {
     public function __construct(

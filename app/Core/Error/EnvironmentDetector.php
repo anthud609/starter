@@ -1,5 +1,8 @@
 <?php
-// src/Core/Error/EnvironmentDetector.php
+declare(strict_types=1);
+
+namespace App\Core\Error;
+
 final class EnvironmentDetector
 {
     public function detect(): string

@@ -1,9 +1,11 @@
 <?php
-// src/Core/Error/RendererFactory.php
-use App\Core\Error\Interfaces\ExceptionRendererInterface;
+declare(strict_types=1);
 
-final class RendererFactory
-{
+namespace App\Core\Error\Factory;
+
+use App\Core\Error\Interfaces\ExceptionRendererInterface;
+// …
+final class RendererFactory{
     public function make(string $env, bool $debug): ExceptionRendererInterface
     {
         return match($env) {

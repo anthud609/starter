@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 use App\Core\Logger\LoggerFactory;
-use App\Core\Error\Factory\ErrorHandlerFactory;
 
 // Ensure this file is only included once
 if (defined('APP_BOOTSTRAPPED')) {
@@ -24,24 +23,16 @@ if (!$debug && file_exists(dirname(__DIR__) . '/.env')) {
     $debug = filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOLEAN);
 }
 
-// Create logger instance
+// Create (or re-use) the global logger
 if (!isset($GLOBALS['app_logger'])) {
     $GLOBALS['app_logger'] = LoggerFactory::createDefault();
 }
 $logger = $GLOBALS['app_logger'];
 
-// Register as global if needed
 if (!function_exists('logger')) {
     function logger(): \Psr\Log\LoggerInterface {
         return $GLOBALS['app_logger'];
     }
 }
-
-// Initialize error handling with correct debug value
-ErrorHandlerFactory::create([
-    'debug' => $debug,
-    'environment' => 'web',
-    'ignored_errors' => $debug ? [] : [E_DEPRECATED, E_USER_DEPRECATED]
-], $logger);
 
 return $logger;

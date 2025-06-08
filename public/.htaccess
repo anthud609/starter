@@ -2,6 +2,9 @@
     RewriteEngine On
     RewriteBase /
 
+    # Prevent favicon.ico requests from being rewritten
+    RewriteRule ^favicon\.ico$ - [L]
+    
     # If the request matches an existing file or folder, serve it normally:
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d

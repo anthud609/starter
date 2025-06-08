@@ -8,6 +8,7 @@ use Psr\Log\LogLevel;
 class PhpErrorHandler implements ErrorHandlerInterface
 {
     private ?LoggerInterface $logger;
+    private array $ignoredErrors = [];
     
     private array $errorLevelMap = [
         E_ERROR => LogLevel::ERROR,
@@ -27,9 +28,10 @@ class PhpErrorHandler implements ErrorHandlerInterface
         E_USER_DEPRECATED => LogLevel::NOTICE,
     ];
     
-    public function __construct(?LoggerInterface $logger = null)
+    public function __construct(?LoggerInterface $logger = null, array $ignoredErrors = [])
     {
         $this->logger = $logger;
+        $this->ignoredErrors = $ignoredErrors;
     }
     
     public function register(): void
@@ -42,6 +44,11 @@ class PhpErrorHandler implements ErrorHandlerInterface
         // Don't handle errors suppressed with @
         if (!(error_reporting() & $level)) {
             return false;
+        }
+        
+        // Skip ignored error types
+        if (in_array($level, $this->ignoredErrors)) {
+            return true;
         }
         
         // Log the error if logger is available

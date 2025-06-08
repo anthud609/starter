@@ -17,23 +17,35 @@ class ErrorHandlerFactory
         $debug = $config['debug'] ?? (defined('APP_DEBUG') ? APP_DEBUG : false);
         $environment = $config['environment'] ?? self::detectEnvironment();
         
+        // Always register PHP error handler first (for warnings, notices, etc)
+        (new PhpErrorHandler($logger))->register();
+        
         if ($debug && $environment === 'web') {
             // Use Whoops in debug mode for web
             $whoops = new \Whoops\Run;
-            $handler = new \Whoops\Handler\PrettyPageHandler;
-            $handler->setPageTitle('Application Error');
             
-            // Add logger to Whoops if available
+            // Add logger handler BEFORE PrettyPageHandler
             if ($logger) {
-                $whoops->pushHandler(function($exception) use ($logger) {
-                    $logger->error($exception->getMessage(), [
-                        'exception' => $exception,
-                        'trace' => $exception->getTraceAsString()
+                $logHandler = new \Whoops\Handler\CallbackHandler(function($exception) use ($logger) {
+                    $logger->error('Uncaught exception: ' . $exception->getMessage(), [
+                        'exception' => [
+                            'class' => get_class($exception),
+                            'message' => $exception->getMessage(),
+                            'code' => $exception->getCode(),
+                            'file' => $exception->getFile(),
+                            'line' => $exception->getLine(),
+                            'trace' => $exception->getTraceAsString()
+                        ]
                     ]);
                 });
+                $whoops->pushHandler($logHandler);
             }
             
+            // Then add the pretty page handler
+            $handler = new \Whoops\Handler\PrettyPageHandler;
+            $handler->setPageTitle('Application Error');
             $whoops->pushHandler($handler);
+            
             $whoops->register();
             return;
         }
@@ -41,8 +53,7 @@ class ErrorHandlerFactory
         // Production or non-web environments
         $renderer = self::getRenderer($environment, $debug);
         
-        // Register handlers with optional logger
-        (new PhpErrorHandler($logger))->register();
+        // Register exception and shutdown handlers
         (new ExceptionHandler($renderer, $logger))->register();
         (new ShutdownHandler($renderer, $logger))->register();
     }

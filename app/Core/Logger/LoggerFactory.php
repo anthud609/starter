@@ -23,14 +23,15 @@ class LoggerFactory
             ));
         }
         
-        if ($config['handlers']['console']['enabled'] ?? (PHP_SAPI === 'cli')) {
+        // Only add console handler if explicitly enabled or in CLI mode
+        if ($config['handlers']['console']['enabled'] ?? false) {
             $logger->addHandler(new ConsoleHandler(
                 $config['handlers']['console']['level'] ?? LogLevel::INFO
             ));
         }
         
         // Add processors
-        if ($config['processors']['web'] ?? true) {
+        if ($config['processors']['web'] ?? (PHP_SAPI !== 'cli')) {
             $logger->addProcessor(new WebProcessor());
         }
         
@@ -39,6 +40,8 @@ class LoggerFactory
     
     public static function createDefault(): Logger
     {
+        $isCli = PHP_SAPI === 'cli';
+        
         return self::create([
             'handlers' => [
                 'file' => [
@@ -47,9 +50,12 @@ class LoggerFactory
                     'level' => LogLevel::DEBUG
                 ],
                 'console' => [
-                    'enabled' => PHP_SAPI === 'cli',
+                    'enabled' => $isCli, // Only enable console in CLI mode
                     'level' => LogLevel::INFO
                 ]
+            ],
+            'processors' => [
+                'web' => !$isCli // Only add web processor in non-CLI mode
             ]
         ]);
     }

@@ -14,8 +14,11 @@ class LoggerFactory
         
         // Add handlers based on config
         if ($config['handlers']['file']['enabled'] ?? true) {
+            $path = $config['handlers']['file']['path'] 
+                ?? dirname(__DIR__, 3) . '/storage/logs/app.log';
+            
             $logger->addHandler(new FileHandler(
-                $config['handlers']['file']['path'] ?? storage_path('logs/app.log'),
+                $path,
                 $config['handlers']['file']['level'] ?? LogLevel::DEBUG
             ));
         }

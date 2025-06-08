@@ -2,14 +2,19 @@
 namespace App\Core\Error\Handler;
 
 use App\Core\Error\Interfaces\ExceptionRendererInterface;
+use Psr\Log\LoggerInterface;
 
 final class ShutdownHandler
 {
     private ExceptionRendererInterface $renderer;
+    private ?LoggerInterface $logger;
 
-    public function __construct(ExceptionRendererInterface $renderer)
-    {
+    public function __construct(
+        ExceptionRendererInterface $renderer,
+        ?LoggerInterface $logger = null
+    ) {
         $this->renderer = $renderer;
+        $this->logger = $logger;
     }
 
     public function register(): void
@@ -31,7 +36,17 @@ final class ShutdownHandler
                 $err['line']
             );
 
-            // Delegate to your HTML/JSON renderer instead of throwing
+            // Log fatal error if logger is available
+            if ($this->logger) {
+                $this->logger->critical('Fatal error during shutdown', [
+                    'message' => $err['message'],
+                    'file' => $err['file'],
+                    'line' => $err['line'],
+                    'type' => $err['type']
+                ]);
+            }
+
+            // Delegate to renderer
             $this->renderer->render($exception);
         }
     }

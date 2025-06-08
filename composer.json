@@ -9,6 +9,7 @@
     "psr-4": { "Tests\\": "tests/" }
   },
     "require": {
-        "filp/whoops": "2"
+        "filp/whoops": "2",
+        "psr/log": "^3.0"
     }
 }

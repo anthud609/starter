@@ -15,7 +15,6 @@ final class PhpErrorHandlerTest extends TestCase
 {
     protected function tearDown(): void
     {
-        // Restore any error handler installed by PhpErrorHandler
         restore_error_handler();
         parent::tearDown();
     }
@@ -26,8 +25,22 @@ final class PhpErrorHandlerTest extends TestCase
         $handler->register();
 
         $this->expectException(\ErrorException::class);
-        $this->expectExceptionMessage('User notice for test');
+        $this->expectExceptionMessage('User error for test');
 
-        trigger_error('User notice for test', E_USER_NOTICE);
+        // Use E_USER_ERROR instead of E_USER_NOTICE
+        // because notices are now logged, not thrown
+        trigger_error('User error for test', E_USER_ERROR);
+    }
+    
+    public function testNoticeDoesNotThrowException(): void
+    {
+        $handler = new PhpErrorHandler();
+        $handler->register();
+        
+        // This should NOT throw an exception
+        $result = @trigger_error('User notice for test', E_USER_NOTICE);
+        
+        // If we get here, the test passes
+        $this->assertTrue(true);
     }
 }

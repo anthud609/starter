@@ -18,6 +18,10 @@ $logger->debug('Request received', [
 if (($_SERVER['REQUEST_URI'] ?? '') !== '/favicon.ico') {
     $logger->info('Application started');
 }
+$detector        = new EnvironmentDetector();
+$rendererFactory = new RendererFactory();
+$bootstrapper    = new ErrorBootstrapper($detector, $rendererFactory, $logger, APP_DEBUG);
+$bootstrapper->register();
 
 // This will trigger an error
 gfdsg();

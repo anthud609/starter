@@ -13,21 +13,21 @@ class ErrorHandlerFactory
  
 public static function create(): void
 {
-    // 1) PHP errors → exceptions
-    (new PhpErrorHandler())->register();
-
-    if (APP_DEBUG) {
-        $whoops = new Run;
-        $page   = new PrettyPageHandler;
-        $page->setPageTitle("Application Error");
-        $whoops->pushHandler($page);
+    if (defined('APP_DEBUG') && APP_DEBUG) {
+        // let Whoops handle errors, exceptions, fatals
+        $whoops = new \Whoops\Run;
+        $handler = new \Whoops\Handler\PrettyPageHandler;
+        $handler->setPageTitle('Application Error');
+        $whoops->pushHandler($handler);
         $whoops->register();
-    } else {
-        // your production HtmlExceptionRenderer
-        (new ExceptionHandler(new HtmlExceptionRenderer()))->register();
+        return;
     }
 
-    (new ShutdownHandler(new HtmlExceptionRenderer()))->register();
+    // ── PRODUCTION: wire up your own handlers ──
+    (new PhpErrorHandler())->register();
+    $renderer = new HtmlExceptionRenderer();
+    (new ExceptionHandler($renderer))->register();
+    (new ShutdownHandler($renderer))->register();
 }
 
 }

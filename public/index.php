@@ -1,16 +1,13 @@
 <?php
 declare(strict_types=1);
+require __DIR__.'/../vendor/autoload.php';
 
-// 1) Autoload all App\ classes
-require __DIR__ . '/../vendor/autoload.php';
-
-// 2) Disable default PHP error display
-ini_set('display_errors', '0');
-ini_set('display_startup_errors', '0');
+define('APP_DEBUG', true);   // or getenv('APP_DEBUG') === 'true'
+ini_set('display_errors','0');
 error_reporting(E_ALL);
 
-// 3) Bootstrap your Core error subsystem
+// bootstrap your handlers
 \App\Core\Error\Factory\ErrorHandlerFactory::create();
 
-// 4) Now your application code—any error here will be caught
+// now trigger the error
 gfdsg();
